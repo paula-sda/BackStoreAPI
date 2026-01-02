@@ -1,3 +1,17 @@
+# Fake Store Back
+
+Al principio, este proyecto era más sencillo. Empecé guardando toda la información en simples arrays dentro del propio código: uno para los productos y otro para los usuarios. Esto era útil para empezar y probar la lógica básica, pero tenía un gran inconveniente: cada vez que reiniciaba el servidor, ¡toda la información se perdía!
+
+Para solucionar esto y hacer el proyecto más realista y funcional, lo he mejorado para que utilice una base de datos real con **Supabase**.
+
+Ahora, el proyecto tiene una base de datos con dos tablas principales:
+*   **`products`**: Donde se guarda toda la información de los productos.
+*   **`users`**: Donde se almacenan los datos de los usuarios, incluyendo sus contraseñas cifradas.
+
+Gracias a esta base de datos, los datos ahora son **permanentes**. Podemos añadir nuevos productos o usuarios, actualizar sus datos o eliminarlos, y toda esa información se conservará aunque el servidor se apague y se vuelva a encender.
+
+---
+
 ## Pruebas (Testing)
 
 Para este proyecto, he montado un sistema de pruebas automáticas. El objetivo es asegurarme de que el código que escribo es de buena calidad y, sobre todo, para no romper algo que ya funcionaba cuando añado cosas nuevas.
@@ -48,3 +62,55 @@ He organizado las pruebas en varios archivos para que todo esté más ordenado.
 ### Nota sobre los "Mocks" (Simulaciones)
 
 Para que las pruebas sean rápidas y no necesiten una base de datos real para funcionar, he usado una técnica llamada "mocking". Básicamente, "simulo" la respuesta de la base de datos (`Supabase`) y de otras librerías (`bcrypt`). De esta forma, puedo probar la lógica de mi aplicación de forma aislada, rápida y predecible.
+
+
+---
+
+## Cómo Probar la API Manualmente
+
+Para comprobar que el proyecto funciona de forma manual, he usado el plugin **Echo API**. Así puedes hacer peticiones a la API directamente.
+
+Las URLs principales para probar son:
+
+*   Para usuarios: `http://localhost:8080/api/users`
+*   Para productos: `http://localhost:8080/api/products`
+
+### Crear un Producto (POST)
+
+Para que la API acepte una petición para crear un nuevo producto, el cuerpo (`body`) de la petición debe tener una estructura como esta:
+
+```json
+{
+    "title": "Mens Cotton Jacket",
+    "price": 55.99,
+    "description": "great outerwear jackets for Spring/Autumn/Winter, suitable for many occasions, such as working, hiking, camping, mountain/rock climbing, cycling, traveling or other outdoors. Good gift choice for you or your family member. A warm hearted love to Father, husband or son in this thanksgiving or Christmas Day.",
+    "category": "men's clothing",
+    "image": "https://fakestoreapi.com/img/71li-ujtlUL._AC_UX679_t.png",
+    "rating": {
+      "rate": 4.7,
+      "count": 500
+    }
+}
+```
+
+### Crear un Usuario (POST)
+
+De forma similar, para crear un nuevo usuario, la estructura que espera la API es la siguiente:
+
+```json
+{
+  "email": "john@gmail.com",
+  "username": "johnd",
+  "password": "m38rmF$",
+  "firstname": "john",
+  "lastname": "doe",
+  "phone": "1-570-236-7033",
+  "street": "new road",
+  "number": 7682,
+  "city": "kilcoole",
+  "zipcode": "12926-3874",
+  "lat": "-37.3159",
+  "long": "81.1496"
+}
+```
+
