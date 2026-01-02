@@ -1,311 +1,170 @@
 import { Router } from "express";
-import { User, UpdateUser } from "../interfaces/users";
+import { supabase } from "../supabaseClient";
 import * as bcrypt from "bcrypt";
-
 
 const router = Router();
 
-const users: User[] = [
-  {
-    address: {
-      geolocation: {
-        lat: "-37.3159",
-        long: "81.1496"
-      },
-      city: "kilcoole",
-      street: "new road",
-      number: 7682,
-      zipcode: "12926-3874"
-    },
-    id: 1,
-    email: "john@gmail.com",
-    username: "johnd",
-    password: "m38rmF$",
-    name: {
-      firstname: "john",
-      lastname: "doe"
-    },
-    phone: "1-570-236-7033",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "-37.3159",
-        long: "81.1496"
-      },
-      city: "kilcoole",
-      street: "Lovers Ln",
-      number: 7267,
-      zipcode: "12926-3874"
-    },
-    id: 2,
-    email: "morrison@gmail.com",
-    username: "mor_2314",
-    password: "83r5^_",
-    name: {
-      firstname: "david",
-      lastname: "morrison"
-    },
-    phone: "1-570-236-7033",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "40.3467",
-        long: "-30.1310"
-      },
-      city: "Cullman",
-      street: "Frances Ct",
-      number: 86,
-      zipcode: "29567-1452"
-    },
-    id: 3,
-    email: "kevin@gmail.com",
-    username: "kevinryan",
-    password: "kev02937@",
-    name: {
-      firstname: "kevin",
-      lastname: "ryan"
-    },
-    phone: "1-567-094-1345",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "50.3467",
-        long: "-20.1310"
-      },
-      city: "San Antonio",
-      street: "Hunters Creek Dr",
-      number: 6454,
-      zipcode: "98234-1734"
-    },
-    id: 4,
-    email: "don@gmail.com",
-    username: "donero",
-    password: "ewedon",
-    name: {
-      firstname: "don",
-      lastname: "romer"
-    },
-    phone: "1-765-789-6734",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "40.3467",
-        long: "-40.1310"
-      },
-      city: "san Antonio",
-      street: "adams St",
-      number: 245,
-      zipcode: "80796-1234"
-    },
-    id: 5,
-    email: "derek@gmail.com",
-    username: "derek",
-    password: "jklg*_56",
-    name: {
-      firstname: "derek",
-      lastname: "powell"
-    },
-    phone: "1-956-001-1945",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "20.1677",
-        long: "-10.6789"
-      },
-      city: "el paso",
-      street: "prospect st",
-      number: 124,
-      zipcode: "12346-0456"
-    },
-    id: 6,
-    email: "david_r@gmail.com",
-    username: "david_r",
-    password: "3478*#54",
-    name: {
-      firstname: "david",
-      lastname: "russell"
-    },
-    phone: "1-678-345-9856",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "10.3456",
-        long: "20.6419"
-      },
-      city: "fresno",
-      street: "saddle st",
-      number: 1342,
-      zipcode: "96378-0245"
-    },
-    id: 7,
-    email: "miriam@gmail.com",
-    username: "snyder",
-    password: "f238&@*$",
-    name: {
-      firstname: "miriam",
-      lastname: "snyder"
-    },
-    phone: "1-123-943-0563",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "50.3456",
-        long: "10.6419"
-      },
-      city: "mesa",
-      street: "vally view ln",
-      number: 1342,
-      zipcode: "96378-0245"
-    },
-    id: 8,
-    email: "william@gmail.com",
-    username: "hopkins",
-    password: "William56$hj",
-    name: {
-      firstname: "william",
-      lastname: "hopkins"
-    },
-    phone: "1-478-001-0890",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "40.12456",
-        long: "20.5419"
-      },
-      city: "miami",
-      street: "avondale ave",
-      number: 345,
-      zipcode: "96378-0245"
-    },
-    id: 9,
-    email: "kate@gmail.com",
-    username: "kate_h",
-    password: "kfejk@*_",
-    name: {
-      firstname: "kate",
-      lastname: "hale"
-    },
-    phone: "1-678-456-1934",
-    __v: 0
-  },
-  {
-    address: {
-      geolocation: {
-        lat: "30.24788",
-        long: "-20.545419"
-      },
-      city: "fort wayne",
-      street: "oak lawn ave",
-      number: 526,
-      zipcode: "10256-4532"
-    },
-    id: 10,
-    email: "jimmie@gmail.com",
-    username: "jimmie_k",
-    password: "klein*#%*",
-    name: {
-      firstname: "jimmie",
-      lastname: "klein"
-    },
-    phone: "1-104-001-4567",
-    __v: 0
+/* =========================
+   GET ALL USERS
+========================= */
+router.get("/", async (req, res) => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*");
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
   }
-];
 
-
-// GET ALL
-router.get('/', (req, res) => {
-  res.json(users);
+  res.json(data);
 });
 
-// GET BY ID
-router.get('/:id', (req, res) => {
+/* =========================
+   GET USER BY ID
+========================= */
+router.get("/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const user = users.find(user => user.id === id);
 
-  if (user) {
-    res.json(user);
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
   }
+
+  if (!data) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json(data);
 });
 
-// POST -> crear usuario con password hasheado
-router.post('/', async (req, res) => {
+/* =========================
+   CREATE USER (POST)
+========================= */
+router.post("/", async (req, res) => {
+  const {
+    email,
+    username,
+    password,
+    firstname,
+    lastname,
+    phone,
+    street,
+    number,
+    city,
+    zipcode,
+    lat,
+    long,
+    __v
+  } = req.body;
+
+  // VALIDATION
+  if (
+    !email ||
+    !username ||
+    !password ||
+    !firstname ||
+    !lastname ||
+    !phone ||
+    !street ||
+    !number ||
+    !city ||
+    !zipcode ||
+    !lat ||
+    !long
+  ) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
   try {
-    const { email, username, password, name, address, phone, __v } = req.body;
-
-    if (!email || !username || !password || !name || !address || !phone) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser: User = {
-      id: users.length + 1,
-      email,
-      username,
-      password: hashedPassword,
-      name,
-      address,
-      phone,
-      __v: __v ?? 0
-    };
+    const { data, error } = await supabase
+      .from("users")
+      .insert([
+        {
+          email,
+          username,
+          password: hashedPassword,
+          firstname,
+          lastname,
+          phone,
+          street,
+          number,
+          city,
+          zipcode,
+          lat,
+          long,
+          __v: __v ?? 0
+        }
+      ])
+      .select()
+      .single();
 
-    users.push(newUser);
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.status(201).json(data);
+
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// PUT -> actualizar usuario, rehasheando password si se envía
-router.put('/:id', async (req, res) => {
+/* =========================
+   UPDATE USER (PUT)
+========================= */
+router.put("/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const userIndex = users.findIndex(user => user.id === id);
+  const updateData: any = { ...req.body };
 
-  if (userIndex === -1) return res.status(404).json({ message: 'User not found' });
-
-  const user = users[userIndex];
-  const updatedUserBody: UpdateUser = { ...req.body };
-
-  // Si se actualiza password, rehashearlo
-  if (updatedUserBody.password) {
-    updatedUserBody.password = await bcrypt.hash(updatedUserBody.password, 10);
+  if (updateData.password) {
+    updateData.password = await bcrypt.hash(updateData.password, 10);
   }
 
-  const updatedUser: User = { ...user, ...updatedUserBody };
-  users[userIndex] = updatedUser;
+  const { data, error } = await supabase
+    .from("users")
+    .update(updateData)
+    .eq("id", id)
+    .select()
+    .single();
 
-  res.json(updatedUser);
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (!data) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json(data);
 });
 
-// DELETE
-router.delete('/:id', (req, res) => {
+/* =========================
+   DELETE USER
+========================= */
+router.delete("/:id", async (req, res) => {
   const id = parseInt(req.params.id);
-  const user = users.find(user => user.id === id);
 
-  if (!user) return res.status(404).json({ message: 'User not found' });
+  const { error, count } = await supabase
+    .from("users")
+    .delete({ count: "exact" })
+    .eq("id", id);
 
-  users.splice(users.indexOf(user), 1);
-  res.json({ message: 'User deleted successfully' });
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  if (count === 0) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json({ message: "User deleted successfully" });
 });
 
 export default router;
