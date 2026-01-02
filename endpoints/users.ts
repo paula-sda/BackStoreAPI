@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { User, UpdateUser } from "../interfaces/users";
+import * as bcrypt from "bcrypt";
+
 
 const router = Router();
 
@@ -244,8 +246,8 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// POST
-router.post('/', (req, res) => {
+// POST -> crear usuario con password hasheado
+router.post('/', async (req, res) => {
   try {
     const { email, username, password, name, address, phone, __v } = req.body;
 
@@ -253,11 +255,14 @@ router.post('/', (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Hash de la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser: User = {
       id: users.length + 1,
       email,
       username,
-      password,
+      password: hashedPassword,
       name,
       address,
       phone,
@@ -266,28 +271,30 @@ router.post('/', (req, res) => {
 
     users.push(newUser);
     res.status(201).json(newUser);
-
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-// PUT
-router.put('/:id', (req, res) => {
+// PUT -> actualizar usuario, rehasheando password si se envía
+router.put('/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   const userIndex = users.findIndex(user => user.id === id);
 
-  if (userIndex !== -1) {
-    const user = users[userIndex];
-    const updatedUserBody: UpdateUser = req.body;
-    const updatedUser: User = { ...user, ...updatedUserBody };
+  if (userIndex === -1) return res.status(404).json({ message: 'User not found' });
 
-    users[userIndex] = updatedUser;
-    res.json(updatedUser);
+  const user = users[userIndex];
+  const updatedUserBody: UpdateUser = { ...req.body };
 
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  // Si se actualiza password, rehashearlo
+  if (updatedUserBody.password) {
+    updatedUserBody.password = await bcrypt.hash(updatedUserBody.password, 10);
   }
+
+  const updatedUser: User = { ...user, ...updatedUserBody };
+  users[userIndex] = updatedUser;
+
+  res.json(updatedUser);
 });
 
 // DELETE
@@ -295,13 +302,10 @@ router.delete('/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const user = users.find(user => user.id === id);
 
-  if (user) {
-    const index = users.indexOf(user);
-    users.splice(index, 1);
-    res.json({ message: 'User deleted successfully' });
-  } else {
-    res.status(404).json({ message: 'User not found' });
-  }
+  if (!user) return res.status(404).json({ message: 'User not found' });
+
+  users.splice(users.indexOf(user), 1);
+  res.json({ message: 'User deleted successfully' });
 });
 
 export default router;
