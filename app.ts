@@ -8,6 +8,8 @@ dotenv.config();
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(
 	cors({
 		origin: process.env.FRONTEND_URL || '*',
@@ -15,9 +17,11 @@ app.use(
 		methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 		allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 		exposedHeaders: ['Content-Range', 'X-Content-Range'],
-		maxAge: 86400, // 24 horas
+		maxAge: 86400,
 	})
 );
+
+app.options('*', cors());
 
 app.use(express.json());
 
